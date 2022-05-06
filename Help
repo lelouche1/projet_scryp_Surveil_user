@@ -1,0 +1,7 @@
+-h : afficher un help detaille
+-g : afficher le le menu graphique (utilisation du YAD) 
+-v : afficher nom des auteurs et version du code
+-m : afficher le menu textuel
+-d : derniere connexions
+-s : supprimer
+-j : journaliser

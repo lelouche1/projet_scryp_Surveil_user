@@ -1,0 +1,32 @@
+
+
+
+HELP
+
+NOM    surveiller_utilisateur	 
+
+SYNOPSIS
+       ./surveiller_utilisateur.sh [OPTION]... ARG ...
+
+DESCRIPTION
+       nous permet de voir les derniere activitées d'un utilisateur faire 
+       des historique et les supprimer
+
+
+LES OPTIONS
+
+-h     afficher l'aide HELP.
+
+-d     pour voir les dernieres connexions d'un utilisateur.
+
+-g     affichage graphique.
+
+-v     pour afficher le nom des auteurs du code.
+
+-m     pour afficher le menu textuel.
+        
+-s     supprimer les enregistrements.
+        
+-j     journaliser les informations.
+
+

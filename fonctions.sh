@@ -3,7 +3,7 @@
 #cette fonction affiche un message sur les options du programme
 
 
-journal="journat.txt"
+journal="journal.txt"
 
 show_usage(){
 
@@ -63,16 +63,16 @@ derniere_connexion(){
 
 #fonction qui creer un fichier journal qui enregistre les connextions
 
-log_connexion(){
+journaliser_connexion(){
 
 	last -F $1 >> $journal 2>&1
-	erreur_log=$1
+	erreur_log=$?
 	if [[ $erreur_log -eq 0 ]]
 	then
 		echo "enregistrement dans journal reussit"
-		date +"%d-%m-%y" >> $journal 2>&1
+		#date +"%d-%m-%y" >> $journal 2>&1
 	else
-		echo "echec enregistrement"
+		echo "echec enregistrement utilisateur non existant"
 	fi
 }
 
@@ -83,7 +83,11 @@ log_connexion(){
 
 supprimer_log(){
 
-	$ awk -F'[ ]' 'NR==1 || (systime()-mktime($3" "$2" "$1" 0 0 0")) <= 7*24*60*60' $journal
+#	$ awk -F'[ ]' 'NR==1 || (systime()-mktime($3" "$2" "$1" 0 0 0")) <= 7*24*60*60' $journal
+	sed '/Fri/!d' journal.txt > journal2.txt
+	rm -r journal.txt
+	mv journal2.txt journal.txt
+
 }
 
 ##########################################################
@@ -92,42 +96,131 @@ info_auteur(){
 	cat version.txt
 }
 
+
+########################################################
+
+#fonction qui afiche le menu textuel
+
 menu_textuel(){
 
-
-
-while [[ $choix -ne 3 ]]
+PS3="Veuilez choisir: "
+select item in "- Help -" "- Menu grahique -" "- Auteur et version du code -" "- Dernière connexions -" "- Supprimer -" "- Journaliser -" "- Fermer le programe -"
 do 
 	
-        echo "1) afficher les etats de connexion d'un utilisateur" 
-        echo "2) Lancer la fonction Verifier paramêtres"  
-        echo "3) QUITTER"
-        read -p "DOnner une valeur compris entre 1 et 4" choix
-        
-        read -p "faite un choix: " choix
-        
-        case $choix in 
-                1) derniere_connexion $OPTARG
-                ;;
-                2) info_auteur
-                ;;
-                3) echo "On quitte"
-                return
-                ;;
-                3) 
-                ;;
-                4) echo "On quitte"
-                return
-                ;;
-                *) echo "Mauvais votre choix (1,2 ou 3 pour quitter "
-	esac
+        echo "Vous avez choisi l'option $REPLY : $item"
+        case $REPLY in 
+                h) echo "Help"
+				  HELP
+  				;;
+
+				g) echo "Menu grahique"
+				   menu_graphique
+  				;;
+
+				v) echo "Auteur et version du code"
+				   info_auteur
+  				;;
+
+				d) echo "Dernière connexions"
+				   echo "Nom d'utilisateur"
+  		   		   read nom
+		  		   derniere_connexion "$nom"
+		  		;;
+
+				s) echo "Supprimer"
+				   echo "Nom d'utilisateur"
+		  		   read nom
+		  		   supprimer_log "$nom"
+		 		;; 
+
+				j) echo "Journaliser"
+				   echo "Nom d'utilisateur"
+		  		   read nom
+		  		   journaliser_connexion "$nom"
+		  		;;
+		  		
+		  		e) echo "Au revoir"
+		  		   exit
+		  		;;
+		esac
+		#sleep
+		#clear
+done
+}
+
+######################################################################################
+
+
+menu_textuel2(){
 	
-	sleep 5
-	clear
+	
+	echo "h- Help -" 
+	echo "g- Menu grahique -" 
+	echo "v- Auteur et version du code -"
+	echo "d- Dernière connexions -" 
+	echo "s- Supprimer -" 
+	echo "j- Journaliser -" 
+	echo "e- Fermer le programe -"
+	
+
+	while [[ $choix != 'e' ]] 
+	do 
+		read -p "Veuilez choisir: " choix
+
+        case $choix in 
+                h) 
+				  HELP
+  				;;
+
+				g) 
+				   menu_graphique
+  				;;
+
+				v) 
+				   info_auteur
+  				;;
+
+				d) 
+				   read -p "Nom d'utilisateur " nom
+		  		   derniere_connexion "$nom"
+		  		;;
+
+				s) 
+				   read "Nom d'utilisateur " nom
+		  		   supprimer_log "$nom"
+		 		;; 
+
+				j) 
+				   read "Nom d'utilisateur " nom
+		  		   journaliser_connexion "$nom"
+		  		;;
+		  		
+		  		e) echo "Au revoir"
+		  		   exit
+		  		;;
+		esac
+		#sleep
+		#clear
+done
+}
+
+
+
+
+
+#####################################################################################
+
+#affichage version
+
+version(){
+
+	cat version.txt
+
 }
 
 #fonction pour creer les options
 
+option(){
 	while getopts "hgvmd:s:j:" options
 	do
 	case $options in
@@ -137,7 +230,7 @@ do
 		;;
 		v)info_auteur
 		;;
-		m)menu_textuel
+		m)menu_textuel2
 		;;
 		d)derniere_connexion $OPTARG
 		;;
@@ -147,3 +240,76 @@ do
 		;;
 	esac
 	done
+}
+
+
+#fonction pour creer les options
+
+
+#fonction menu graphique
+menu_graphique()
+{
+	action=$(yad --entry --title "Menu graphique" --text " Choississez une option\n-h : Help\n-v : Version du code\n-m : Menu textuel\n-d : Dernieres connexions\n-s : Supprimer\n-j : journaliser" )
+
+	action=$(echo "$action")
+
+	case $action in
+		h) HELP
+  		;;
+
+		v) info_auteur
+  		;;
+
+		m) menu_textuel2
+  		;;
+
+		d) echo "Nom d'utilisateur"
+  		   read nom
+  		   derniere_connexion "$nom"
+  		;;
+
+		s) echo "Nom d'utilisateur"
+  		   read nom
+  		   supprimer_log "$nom"
+ 		;; 
+
+		j) echo "Nom d'utilisateur"
+  		   read nom
+  		   journaliser_connexion "$nom"
+  		;;
+esac
+}
+
+#declaration des options
+
+	if [ "$#" -eq 0 ]
+	then
+	show_usage
+	fi
+
+	while getopts "hgvmd:s:j:" options
+		do
+		case $options in
+			h) HELP
+			;;
+			
+			g) menu_graphique
+			;;
+			
+			v) info_auteur
+			;;
+			
+			m) menu_textuel2
+			;;
+			
+			d) derniere_connexion $OPTARG
+			;;
+			
+			s) supprimer_log $OPTARG
+			;;
+			
+			j) journaliser_connexion $OPTARG
+			;;
+		esac
+	done
+	exit 0
